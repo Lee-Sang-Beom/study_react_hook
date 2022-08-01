@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
+import { ThemeContext } from "../context/ThemeContext";
 
-function Content({ isDark }) {
+function Content() {
+  const { isDark } = useContext(ThemeContext); // obj내, isDark만 가져옴
   return (
     <div
       className="content"
