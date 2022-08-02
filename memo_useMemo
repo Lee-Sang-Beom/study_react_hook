@@ -1,3 +1,67 @@
+1. useMemo의 구조
+ - 인자 1 : callback함수 - memorization할 값을 계산해 return하는 함수
+ - 인자 2 : 의존성배열 - 배열 내 값이 업데이트될 때만 콜백함수를 호출해 memorization된 값을 업데이트함
+
+ const value = useMemo(()=> {
+    return calculate();
+ }, [value])
+
+===
+
+ 2. 예제 1 (계산기)
+import logo from "./logo.svg";
+import "./App.css";
+import { useState, useRef, useEffect, useMemo } from "react";
+
+const hardCal = (number) => {
+  console.log("어려운!");
+  for (let i = 0; i < 999999999; i++) {}
+  return number + 10000;
+};
+
+const easyCal = (number) => {
+  console.log("쉬운!");
+  return number + 1;
+};
+
+function App() {
+  const [hardNum, setHardNum] = useState(1);
+  // const hardSum = hardCal(hardNum);
+  const hardSum = useMemo(()=>{
+    return hardCal(hardNum); // memorization할 함수
+  }, [hardNum]); // hardNum값이 바뀔때만 hardCal을 호출하여, memorization으로 리턴하는 값 업데이트
+
+  const [easyNum, setEasyNum] = useState(1);
+  const easySum = easyCal(easyNum);
+
+  return (
+    <div>
+      <h3>계산기</h3>
+      <input
+        type="number"
+        value={hardNum}
+        onChange={(e) => setHardNum(parseInt(e.target.value))}
+      />
+      <span> + 10000 = {hardSum}</span>
+
+
+      <h3>계산기</h3> {/* APP컴토넌트가 함수형 컴포넌트라, EASY한 변경에도, hardSum이 초기화되면서 느려짐*/}
+      <input
+        type="number"
+        value={easyNum}
+        onChange={(e) => setEasyNum(parseInt(e.target.value))}
+      />
+      <span> + 1 = {easySum}</span>
+    </div>
+  );
+}
+
+export default App;
+
+===
+
+3. 예제 2 (obj 확인하기)
+
 import logo from "./logo.svg";
 import "./App.css";
 import { useState, useRef, useEffect, useMemo } from "react";
