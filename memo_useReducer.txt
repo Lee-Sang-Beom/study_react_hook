@@ -1,3 +1,50 @@
+0. useReducer
+
+- useReducer 구성요소
+  1. reducer : state를 업데이트시켜주는 역할의 함수
+  2. dispatch : reducer에게 보내는 요구
+  3. action : reducer에게 보내는 요구의 "내용"
+  
+- const [state이름, dispatch함수] = useReducer(reducer함수, state의 초기값);
+    -> useReducer는 배열반환
+      1. money는 새로 만들어진 state 
+        - setNum(?)처럼 변경가능하지만, 이는 reducer함수를 통해 변경해야 함
+
+      2. useReducer가 만들어준 dispatch
+        - dispatch() 함수 호출 시, reducer함수가 실행됨
+
+- 아래처럼 어딘가에서, dispatch() 호출 시, reducer함수가 실행됨.
+  dispatch내에는, obj형식으로, action(요청 행위)를 지정가능
+
+      <button
+        onClick={() => {
+          dispatch({ type: ACTION_TYPES.deposit, payload: num });
+        }}
+      >
+        예금
+      </button>
+
+ - reducer함수는 state값과 dispatch로 전달받은 action을 인자로 받음
+   아래처럼 변경된 state값을 return함. 주의해야 할 점은 변경된 state값 전체를 return해야 한다는 것임
+
+const reducer = (state, action) => {
+  // console.log(state, action);
+  // return state + action.payload; // return하는 값이 새 state값. 즉, money의 새로운 값임
+
+  switch (action.type) {
+    case ACTION_TYPES.deposit:
+      return state + action.payload;
+    case ACTION_TYPES.withdraw:
+      return state - action.payload;
+    default:
+      return state;
+  }
+};
+
+===
+
+1. useReducer 예제 1
+
 import logo from "./logo.svg";
 import "./App.css";
 import { useState, useReducer } from "react";
@@ -19,6 +66,7 @@ const ACTION_TYPES = {
   deposit: "deposit",
   withdraw: "withdraw",
 };
+
 const reducer = (state, action) => {
   // console.log(state, action);
   // return state + action.payload; // return하는 값이 새 state값. 즉, money의 새로운 값임
@@ -93,3 +141,134 @@ function App() {
 }
 
 export default App;
+
+
+===
+
+2. useReducer 예제 2
+ 
+
+(2-1) app.js
+
+import logo from "./logo.svg";
+import "./App.css";
+import { useState, useReducer } from "react";
+import Student from "./Student";
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "ADD":
+      const name = action.data;
+      const newStudent = {
+        id: Date.now(),
+        name: name,
+        isHere: false,
+      };
+
+      return {
+        count: state.count + 1,
+        students: [...state.students, newStudent],
+      };
+
+    case "DEL":
+      return {
+        count: state.count - 1,
+        students: state.students.filter((student) => student.id !== action.id),
+      };
+
+    case "CHECK":
+      return {
+        count: state.count,
+        students: state.students.map((student) => {
+          if (student.id === action.id) {
+            return { ...student, isHere: !student.isHere }; 
+            // 만약 dispatch로 전달된 바꾸고자하는 action id가 student의 id와 같다면, 기존 student정보는 내버려두고, ishere만 바꾸는것
+          }
+
+          return student; // 위 if와 관련된 id가 아닌경우에는 그냥 student를 변경하지않고 return
+        }),
+      };
+
+    default:
+      return state;
+  }
+};
+
+const initialState = {
+  count: 0,
+  students: [],
+};
+
+function App() {
+  const [name, setName] = useState("");
+
+  // const [state이름, dispatch함수] = useReducer(변경해주는 reducer함수, state 초기값)
+  const [studentState, dispatch] = useReducer(reducer, initialState);
+
+  return (
+    <div>
+      <h1>출석부</h1>
+      <p>총 학생 수 : {studentState.count}</p>
+      <input
+        type="text"
+        placeholder="이름 입력"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <button
+        onClick={() => {
+          dispatch({ type: "ADD", data: name });
+        }}
+      >
+        추가
+      </button>
+
+      <br />
+      {studentState.students.map((student) => (
+        <Student
+          key={student.id}
+          name={student.name}
+          id={student.id}
+          dispatch={dispatch}
+          isHere={student.isHere}
+        />
+      ))}
+    </div>
+  );
+}
+
+export default App;
+
+--
+ 
+(2-2) student.js
+
+import React from "react";
+
+const Student = ({ name, dispatch, id, isHere }) => {
+  return (
+    <div>
+      <span
+        style={{
+          textDecoration: isHere ? "line-through" : "none",
+          color: isHere ? "gray" : "black",
+        }}
+
+        onClick={()=>{
+            dispatch({type:"CHECK", id: id})
+        }}
+      >
+        {name}
+      </span>
+      <button
+        onClick={() => {
+          dispatch({ type: "DEL", id: id });
+        }}
+      >
+        삭제
+      </button>
+    </div>
+  );
+};
+
+export default Student;
