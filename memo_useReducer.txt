@@ -1,0 +1,95 @@
+import logo from "./logo.svg";
+import "./App.css";
+import { useState, useReducer } from "react";
+
+/*
+  useReducer 구성요소
+  1. reducer : state를 업데이트시켜주는 역할 
+  2. dispatch : reducer에게 보내는 요구
+  3. action : reducer에게 보내는 요구의 "내용"
+*/
+
+/*
+  reducer함수는 2가지 인자를 받음.
+  1. 현재 state
+  2. action : state변경에 대한 내용
+*/
+
+const ACTION_TYPES = {
+  deposit: "deposit",
+  withdraw: "withdraw",
+};
+const reducer = (state, action) => {
+  // console.log(state, action);
+  // return state + action.payload; // return하는 값이 새 state값. 즉, money의 새로운 값임
+
+  switch (action.type) {
+    case ACTION_TYPES.deposit:
+      return state + action.payload;
+    case ACTION_TYPES.withdraw:
+      return state - action.payload;
+    default:
+      return state;
+  }
+};
+
+function App() {
+  const [num, setNum] = useState(0);
+
+  /* 
+    - useReducer는 배열반환
+      1. money는 새로 만들어진 state 
+        - setNum(?)처럼 변경가능하지만, 이는 reducer함수를 통해 변경해야 함
+
+      2. useReducer가 만들어준 dispatch
+        - dispatch() 함수 호출 시, reducer함수가 실행됨
+    
+      ===
+
+    - useReducer 인자
+      1. reducer
+      2. money state의 초기값 
+  */
+  const [money, dispatch] = useReducer(reducer, 0);
+
+  return (
+    <div>
+      <h2>useReducer 은행예제</h2>
+      <p>잔고: {money}원</p>
+      <input
+        type="number"
+        value={num}
+        onChange={(e) => setNum(parseInt(e.target.value))}
+        step="1000"
+      />
+      <button
+        onClick={() => {
+          /*
+            dispatch() 호출 시, reducer함수가 호출된다.
+            이 때, action은 obj 형식으로 들어가며, "type": "action명" 식으로 작성할 수 있다.
+
+            여기서는 총 2개 값을 보냄. (payload에 num값을 보내고, money state를 num값으로 바꾸는 일을 함)
+          */
+          dispatch({ type: ACTION_TYPES.deposit, payload: num });
+        }}
+      >
+        예금
+      </button>
+      <button
+        onClick={() => {
+          /*
+          dispatch() 호출 시, reducer함수가 호출된다.
+          이 때, action은 obj 형식으로 들어가며, "type": "action명" 식으로 작성할 수 있다.
+
+          여기서는 총 2개 값을 보냄. (payload에 num값을 보내고, money state를 num값으로 바꾸는 일을 함)
+        */
+          dispatch({ type: ACTION_TYPES.withdraw, payload: num });
+        }}
+      >
+        출금
+      </button>
+    </div>
+  );
+}
+
+export default App;
