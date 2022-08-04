@@ -1,86 +1,49 @@
 import logo from "./logo.svg";
 import "./App.css";
-import { useState, useReducer } from "react";
-import Student from "./Student";
-
-const reducer = (state, action) => {
-  switch (action.type) {
-    case "ADD":
-      const name = action.data;
-      const newStudent = {
-        id: Date.now(),
-        name: name,
-        isHere: false,
-      };
-
-      return {
-        count: state.count + 1,
-        students: [...state.students, newStudent],
-      };
-
-    case "DEL":
-      return {
-        count: state.count - 1,
-        students: state.students.filter((student) => student.id !== action.id),
-      };
-
-    case "CHECK":
-      return {
-        count: state.count,
-        students: state.students.map((student) => {
-          if (student.id === action.id) {
-            return { ...student, isHere: !student.isHere }; 
-            // 만약 dispatch로 전달된 바꾸고자하는 action id가 student의 id와 같다면, 기존 student정보는 내버려두고, ishere만 바꾸는것
-          }
-
-          return student; // 위 if와 관련된 id가 아닌경우에는 그냥 student를 변경하지않고 return
-        }),
-      };
-
-    default:
-      return state;
-  }
-};
-
-const initialState = {
-  count: 0,
-  students: [],
-};
+import { useState, useReducer, useEffect, useCallback } from "react";
+import Box from "./Box";
 
 function App() {
-  const [name, setName] = useState("");
+  const [size, setSize] = useState(100);
+  const [isDark, setIsDark] = useState(false);
 
-  // const [state이름, dispatch함수] = useReducer(변경해주는 reducer함수, state 초기값)
-  const [studentState, dispatch] = useReducer(reducer, initialState);
+  /* 
+   - 아래처럼 하면, changeTheme 버튼으로 인한 재 렌더링으로, 
+     app()이 재호출되면서 createBoxStyle이 재초기화 됨. 
+
+   - 함수객체가 createBoxStyle이기때문에 메모리주소가 달라져,
+     다른값으로 생각하기 때문에 Box.js의 useEffect가 실행됨
+
+   - 이렇게 불필요한 함수의 재렌더링을 막기위해 useCallback사용
+  */ 
+
+  // const createBoxStyle = () => {
+  //   return {
+  //     backgroundColor: "pink",
+  //     width: `${size}px`,
+  //     height: `${size}px`,
+  //   };
+  // };
+
+  const createBoxStyle = useCallback(()=>{
+    return {
+          backgroundColor: "pink",
+          width: `${size}px`,
+          height: `${size}px`,
+        };
+  },[size])
 
   return (
-    <div>
-      <h1>출석부</h1>
-      <p>총 학생 수 : {studentState.count}</p>
+    <div style={{
+      backgroundColor : isDark ? "black" : "yellow",
+    }}>
       <input
-        type="text"
-        placeholder="이름 입력"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        type="number"
+        value={size}
+        onChange={(e) => setSize(e.target.value)}
       />
-      <button
-        onClick={() => {
-          dispatch({ type: "ADD", data: name });
-        }}
-      >
-        추가
-      </button>
-
-      <br />
-      {studentState.students.map((student) => (
-        <Student
-          key={student.id}
-          name={student.name}
-          id={student.id}
-          dispatch={dispatch}
-          isHere={student.isHere}
-        />
-      ))}
+      <button onClick={()=>setIsDark(!isDark)}>change Theme</button>
+      <Box createBoxStyle={createBoxStyle} />
     </div>
   );
 }
