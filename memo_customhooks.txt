@@ -1,0 +1,238 @@
+1. useInput 만들어 사용하기.
+ - 아래예제는, input 요소가 한 페이지에 많이 있거나 다른 페이지도 같은 input 요소릃 사용할때 반복해서 복붙해줘야 하는 단점존재
+
+ (1) 변경 전
+ '''
+import logo from "./logo.svg";
+import "./App.css";
+import { useState, useReducer, useEffect, useCallback, useMemo } from "react";
+import "./css/style.css";
+import Component from "./Component";
+function App() {
+
+  const [inputValue, setInputValue]=useState('');
+
+  const handleChange=(e)=>{
+    setInputValue(e.target.value);
+  }
+
+  const handleSubmit =() =>{
+    alert(inputValue);
+    setInputValue('');
+  }
+  return (
+    <div>
+      <h1>useInput</h1>
+      <input value={inputValue} onChange={handleChange}/>
+      <button onClick={handleSubmit}>확인</button>
+    </div>
+  );
+}
+
+export default App;
+ '''
+
+
+(2) 변경 후
+'''
+1) app.js
+import logo from "./logo.svg";
+import "./App.css";
+import { useState, useReducer, useEffect, useCallback, useMemo } from "react";
+import "./css/style.css";
+import Component from "./Component";
+import useInput from "./useInput";
+
+// useInput()에 전달되는 함수
+function displayMsg(msg){
+  alert(msg);
+}
+
+function App() {
+  // 초기값 '' 과 alert할 함수 전달하여, return값을 받아옴
+  const [inputValue, handleChange, handleSubmit] = useInput("", displayMsg);
+
+  return (
+    <div>
+      <h1>useInput</h1>
+
+      {/* 초기 '' 값을 가지다가, onChange함수로 설정된 handleChange를 이용해 input요소 관리 */}
+      <input value={inputValue} onChange={handleChange}/>
+      <button onClick={handleSubmit}>확인</button>
+    </div>
+  );
+}
+
+export default App;
+
+===
+2) useInput.js
+
+import { useState } from "react";
+
+function useInput(initialValue, submitAction) {
+
+    // custom hook에서 useState사용
+    const [inputValue, setInputValue] = useState(initialValue);
+  
+    // custom hook에서, state관리
+    const handleChange=(e)=>{
+      setInputValue(e.target.value);
+    }
+  
+    const handleSubmit =() =>{
+      // useInput이 받은 함수사용 : inputValue를 넣어, alert되도록 함
+      submitAction(inputValue);
+      setInputValue("");
+    }
+
+    // 관리될 state나 함수 반환
+    return [inputValue, handleChange, handleSubmit];
+  }
+  
+  export default useInput;
+'''
+
+
+
+
+
+
+
+
+
+=========================================
+
+2. useFetch 커스텀 훅 만들기
+
+(1) 변경 전
+
+'''
+import logo from "./logo.svg";
+import "./App.css";
+import { useState, useReducer, useEffect, useCallback, useMemo } from "react";
+import "./css/style.css";
+import Component from "./Component";
+
+const baseUrl = "https://jsonplaceholder.typicode.com"
+
+function App() {
+  const [data, setData] = useState(null);
+
+  // api를 받아오는 함수 (반환되는 json파일은 type에 따라 다름)
+  const fetchUrl = (type) => {
+    fetch(baseUrl+"/"+type)
+    .then((res) => res.json())
+    .then((res) => setData(res)); // 받아온 json값을 state에 저장
+  }
+
+  useEffect(() => {
+    fetchUrl("users"); // 최초 렌더링 시, users 사용
+  }, []);
+
+  return (
+    <div>
+      <h1>useFetch</h1>
+      <button onClick={()=>fetchUrl("users")}>Users</button>
+      <button onClick={()=>fetchUrl("posts")}>Posts</button>
+      <button onClick={()=>fetchUrl("todos")}>Todos</button>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+
+export default App;
+
+'''
+
+(2) 변경 후
+
+- app.js
+
+ '''
+import logo from "./logo.svg";
+import "./App.css";
+import { useState, useReducer, useEffect, useCallback, useMemo } from "react";
+import "./css/style.css";
+import Component from "./Component";
+import useFetch from "./useFetch";
+
+const baseUrl = "https://jsonplaceholder.typicode.com";
+
+function App() {
+
+  // useFetch를 함수와 state저장소 및 기능을 수행하는 작업공간으로 사용
+  const { data, fetchUrl } = useFetch(baseUrl, "users");
+
+  return (
+    <div>
+      <h1>useFetch</h1>
+      <button onClick={() => fetchUrl("users")}>Users</button>
+      <button onClick={() => fetchUrl("posts")}>Posts</button>
+      <button onClick={() => fetchUrl("todos")}>Todos</button>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+
+export default App;
+
+혹은)
+
+import logo from "./logo.svg";
+import "./App.css";
+import { useState, useReducer, useEffect, useCallback, useMemo } from "react";
+import "./css/style.css";
+import Component from "./Component";
+import useFetch from "./useFetch";
+
+const baseUrl = "https://jsonplaceholder.typicode.com";
+
+function App() {
+
+  // useFetch에서 data 프로퍼티만 받아와, 이름을 userDataㅀ 사용
+  const { data: usrData } = useFetch(baseUrl, "users");
+  const { data: postData } = useFetch(baseUrl, "posts");
+  return (
+    <div>
+      <h1>user</h1>
+      {usrData && <pre>{JSON.stringify(usrData[0], null, 2)}</pre>}
+      <h1>post</h1>
+      {postData && <pre>{JSON.stringify(postData[0], null, 2)}</pre>}
+
+    </div>
+  );
+}
+
+export default App;
+
+'''
+
+
+- useFetch.js
+
+'''
+import { useEffect, useState } from "react";
+
+function useFetch(baseUrl, initType) {
+  const [data, setData] = useState(null);
+
+  // api를 받아오는 함수 (반환되는 json파일은 type에 따라 다름)
+  const fetchUrl = (type) => {
+    fetch(baseUrl+"/"+type)
+    .then((res) => res.json())
+    .then((res) => setData(res)); // 받아온 json값을 state에 저장
+  }
+
+  useEffect(() => {
+    fetchUrl(initType); // 최초 렌더링 시, users 사용
+  }, []);
+
+  return { // 객체형태로 반환가능
+    data,
+    fetchUrl
+  }
+}
+export default useFetch;
+
+'''
