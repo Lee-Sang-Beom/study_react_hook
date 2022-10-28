@@ -3,10 +3,7 @@ import { useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { UserContext } from "../context/UserContext";
 
-function Header() {
-  const { isDark } = useContext(ThemeContext); // obj내, isDark만 가져옴
-//   const user = useContext(UserContext); // obj내, isDark만 가져옴
-  console.log(isDark);
+function Header({isDark}) {
 
   return (
     <header
