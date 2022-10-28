@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 
-function Footer({isDark, setIsDark}) {
-
+function Footer() {
+  const {isDark, setIsDark} = useContext(ThemeContext);
   const toggle = () => {
     setIsDark(!isDark);
   };

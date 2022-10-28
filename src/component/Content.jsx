@@ -1,7 +1,8 @@
 import React, { useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 
-function Content({isDark}) {
+function Content() {
+  const {isDark} = useContext(ThemeContext);
   return (
     <div
       className="content"
