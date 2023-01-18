@@ -1,58 +1,34 @@
-import "./App.css";
-import React, { useCallback, useState } from "react";
-import styled from "styled-components";
-import Box from "./component/Box";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import Child from "./child";
 
-export interface styleSet {
-  backgroundColor: string;
-  width: string;
-  height: string;
+interface IProps {
+  name: string;
+  tellMe: React.FC;
 }
 
 function App() {
-  const [size, setSize] = useState<string | number>(100);
-  const [isDark, setIsDark] = useState<Boolean>(true);
+  const [parentAge, setParentAge] = useState<number>(0);
 
-  function returnStyle(): styleSet {
-    return {
-      backgroundColor: "pink",
-      width: `${size}px`,
-      height: `${size}px`,
-    };
-  }
-
-  const createBoxStyle = useCallback(returnStyle, [isDark]);
-
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setSize(value);
+  const name = {
+    lastName: "길동",
+    firstName: "홍",
   };
 
-  const toggleIsDark = () => {
-    setIsDark((prev) => !prev);
-  };
+  const tellMe = useCallback(() => {
+    return console.log("hello");
+  }, []);
 
-  const Div = styled.div`
-    width: 100%;
-    height: 100%;
-    background-color: ${isDark ? "black" : "white"}
-    color: ${isDark ? "white" : "black"}
-    `;
-
-  const Container = styled.div`
-    width: 100%;
-    height: 100vh;
-  `;
-
+  const incrementParentAge = () => setParentAge((prev) => prev + 1);
   return (
-    <Container>
-      <Div style={{ backgroundColor: isDark ? "black" : "white" }}>
-        <input type="number" value={size} onChange={onChange} />
-        <input />
-        <button onClick={toggleIsDark}>Change</button>
-        <Box createBoxStyle={createBoxStyle} />
-      </Div>
-    </Container>
+    <div>
+      <h1>부모</h1>
+      <p>age : {parentAge}</p>
+      <button onClick={incrementParentAge}>부모 나이 증가</button>
+
+      <hr />
+
+      <Child name={name} tellMe={tellMe} />
+    </div>
   );
 }
 

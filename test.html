@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #box {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 100px;
+            text-align: center;
+            background: antiquewhite;
+
+            animation-name: rint;
+            animation-duration: 2s;
+            animation-timing-function: linear;
+
+            /* 반복횟수 */
+            animation-iteration-count: infinite;
+
+            /* 반복형태 : from->to->from */
+            animation-direction: alternate;
+        }
+
+        #box:hover {
+            /* 애니메이션 중지 및 재생 */
+            animation-play-state: paused;
+        }
+
+        #box>h1 {
+            line-height: 100px;
+        }
+
+        @keyframes rint {
+            from {
+                left: 0;
+                transform: rotate(0deg);
+            }
+
+            to {
+                left: 500px;
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="box">
+        <h1>Rotation</h1>
+    </div>
+</body>
+
+</html>
